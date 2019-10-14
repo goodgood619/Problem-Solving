@@ -21,66 +21,81 @@ typedef long long ll;
 typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
 typedef pair<int, pair<int, int>> PPP;
-int gox[4] = { 0, -1,0,1};
-int goy[4] = { 1, 0,-1,0};
-int board[51][51];
-bool visited[51][51];
-int temp[51][51];
-int n, l, r;
-void dfs(int x,int y,int num) {
-	temp[x][y] = num;
-	visited[x][y] = true;
+typedef pair<pair<int, int>, pair<int, int>> PPPP;
+int gox[4] = { -1,0,1,0 };
+int goy[4] = { 0,1,0,-1 };
+struct position {
+	int x;
+	int y;
+};
+void dfs(int x,int y,int **visited,int **board,int &n,int &l,int &r,vector<position> &nation) {
+	visited[x][y] = 1;
+	nation.push_back({ x,y });
 	for (int i = 0; i < 4; i++) {
-		int nx = x + gox[i];
-		int ny = y + goy[i];
-		if (nx<1 || nx>n || ny<1 || ny>n || visited[nx][ny] || abs(board[x][y] - board[nx][ny]) < l || abs(board[x][y] - board[nx][ny]) > r) continue;
-		dfs(nx, ny, num);
+		int nx = x + gox[i], ny = y + goy[i];
+		if (nx < 0 || nx >= n || ny < 0 || ny >= n || visited[nx][ny] || abs(board[x][y] - board[nx][ny]) < l || abs(board[x][y] - board[nx][ny]) > r) continue;
+		else {
+			dfs(nx, ny, visited, board, n, l, r,nation);
+		}
+	}
+}
+void reset(int **visited,int n) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			visited[i][j] = 0;
+		}
 	}
 }
 int main() {
+	int n, l, r;
 	scanf("%d%d%d", &n, &l, &r);
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
+	int** board = new int* [n];
+	int** visited = new int* [n];
+	for (int i = 0; i < n; i++) { 
+		board[i] = new int[n]; 
+		visited[i] = new int[n];
+	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
 			scanf(" %d", &board[i][j]);
+			visited[i][j] = 0;
 		}
 	}
-	int ti = 0;
-	while (1) {
-		memset(visited, false, sizeof(visited));
-		memset(temp, 0, sizeof(temp));
-		int cnt = 0;
-		int num = 1;
-		vector<vector<P>> v;
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= n; j++) {
+	int cnt = 0;
+	while (true) {
+		int change = 0;
+		int area = 0;
+		vector<vector<position>> Union;
+		reset(visited,n);
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
 				if (!visited[i][j]) {
-					dfs(i, j,num);
-					cnt++,num++;
+					vector<position> nation;
+					dfs(i, j, visited, board,n,l,r,nation);
+					area++;
+					Union.push_back(nation);
 				}
 			}
 		}
-		if (cnt == n * n) break;
-		v.resize(num);
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= n; j++) {
-				v[temp[i][j]].push_back({i,j});
-			}
-		}
+		if (area == n * n) break; //모든 국가가 하나의 연합을 이룰때 끝
 
-		for (int i = 1; i <num; i++) {
+		//인구이동
+		for (int i = 0; i < Union.size(); i++) {
 			int sum = 0;
-			vector<P> change;
-			for (int j = 0; j < v[i].size(); j++) {
-				sum += board[v[i][j].first][v[i][j].second];
-				change.push_back({ v[i][j].first,v[i][j].second });
+			for (int j = 0; j < Union[i].size(); j++) {
+				int x = Union[i][j].x, y = Union[i][j].y;
+				sum += board[x][y];
 			}
-			sum /= v[i].size();
-			for (int i = 0; i < change.size(); i++) {
-				board[change[i].first][change[i].second] = sum;
+			sum /= Union[i].size();
+			//다시 위치시키기
+			for (int j = 0; j < Union[i].size(); j++) {
+				int x = Union[i][j].x, y = Union[i][j].y;
+				board[x][y] = sum;
 			}
 		}
-		ti++;
+		cnt++;
+
 	}
-	printf("%d\n",ti);
+	printf("%d\n", cnt);
 	return 0;
 }

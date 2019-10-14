@@ -20,74 +20,71 @@ typedef long long ll;
 #define mod 1000000007
 typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
-typedef pair<char, pair<int, int>> PPP;
+typedef pair<int, pair<int, int>> PPP;
 typedef pair<pair<int, int>, pair<int, int>> PPPP;
-int gox[4] = { 0,1,-1,0 };
-int goy[4] = { 1,0,0,-1 };
-int t, Case = 1,ans=1e9;
-int board[11][11];
-bool visited[11][11];
-int a[6] = { 0,5,5,5,5,5 };
-void make(int index,int length) {
-	int x = index / 10, y = index % 10;
-	for (int i = x; i < x + length; i++) {
-		for (int j = y; j < y + length; j++) {
+int gox[4] = { -1,0,1,0 };
+int goy[4] = { 0,1,0,-1 };
+struct position {
+	int x;
+	int y;
+	int dist;
+};
+int check(int here,int length,int **board) {
+	int x = here / 10,y = here % 10;
+	if (x + length >= 10 || y + length >= 10) return 1;
+	for (int i = x; i <= x + length; i++) {
+		for (int j = y; j <= y + length; j++) {
+			if (board[i][j] == 0) return 1;
+		}
+	}
+	return 0;
+}
+void make(int here,int **board,int length) {
+	int x = here / 10, y = here % 10;
+	for (int i = x; i <= x + length; i++) {
+		for (int j = y; j <= y + length; j++) {
 			board[i][j] = 0;
 		}
 	}
 }
-void back(int index,int length) {
-	int x = index / 10, y = index % 10;
-	for (int i = x; i < x + length; i++) {
-		for (int j = y; j < y + length; j++) {
+void back(int here,int **board,int length) {
+	int x = here / 10, y = here % 10;
+	for (int i = x; i <= x + length; i++) {
+		for (int j = y; j <= y + length; j++) {
 			board[i][j] = 1;
 		}
 	}
 }
-bool check(int index,int length) {
-	int x = index / 10, y = index % 10;
-	for (int i = x; i < x + length; i++) {
-		for (int j = y; j < y + length; j++) {
-			if (board[i][j] == 0) {
-				return true;
-			}
-		}
-	}
-	return false;
-}
-void dfs(int index,int cnt) {
-	while (index < 100 && board[index / 10][index % 10] == 0) index++;
-	if (index >= 100) {
-		int rest = 25 - (a[1]+a[2]+a[3]+a[4]+a[5]);
-		ans = min(ans,rest);
+void go(int here,int **board,int &ans,int *paper) {
+	while (here < 100 && board[here / 10][here % 10] == 0) here++;
+	if (here >= 100) {
+		ans = min(ans, 25 - paper[0] - paper[1] - paper[2] - paper[3] - paper[4]);
 		return;
 	}
-
-	for (int i = 1; i <= 5; i++) {
-		if (check(index, i)) continue;
-		if (a[i] > 0) {
-			a[i] -= 1;
-			make(index,i);
-			dfs(index + 1, cnt + 1);
-			back(index,i);
-			a[i] += 1;
+	for (int i = 5; i >= 1; i--) {
+		if (check(here, i-1,board) == 1) continue;
+		if (paper[i - 1] > 0) {
+			paper[i - 1] -= 1;
+			make(here,board,i-1);
+			go(here + 1, board, ans, paper);
+			back(here,board,i-1);
+			paper[i - 1] += 1;
 		}
 	}
 }
 int main() {
-	setbuf(stdout, NULL);
-	int zero = 0;
-	for (int i = 0; i < 10; i++) {
+	int** board = new int*[10];
+	int* paper = new int[5];
+	for (int i = 0; i < 5; i++) paper[i] = 5;
+	for (int i = 0; i < 10; i++) board[i] = new int[10];
+	for (int i = 0; i < 10; i++){
 		for (int j = 0; j < 10; j++) {
 			scanf(" %d", &board[i][j]);
-			if (board[i][j] == 0) zero++;
 		}
 	}
-	if (zero == 100) {
-		printf("0\n");
-		return 0;
-	}
-	dfs(0,0);
+
+	int ans = 1e9;
+	go(0,board,ans,paper);
 	ans == 1e9 ? printf("-1\n") : printf("%d\n", ans);
 	return 0;
 }

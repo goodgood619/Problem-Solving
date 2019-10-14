@@ -20,79 +20,103 @@ typedef long long ll;
 #define mod 1000000007
 typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
-typedef pair<double, pair<int, int>> PPP;
+typedef pair<int, pair<int, int>> PPP;
 typedef pair<pair<int, int>, pair<int, int>> PPPP;
 int gox[4] = { -1,0,1,0 };
 int goy[4] = { 0,1,0,-1 };
-int t, Case = 1,n,m,ans;
-int board[8][8];
-bool visit[65];
-void bfs() {
-	queue<pair<int, int>> q;
-	int temp[8][8] = { 0, };
-	bool visited[8][8] = { false, };
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
+struct position {
+	int x;
+	int y;
+};
+int bfs(int**board,vector<position> &temp,int n,int m) {
+	queue<position> q;
+	int** tempboard = new int*[n + 1];
+	int** tempvisited = new int* [n + 1];
+	for (int i = 1; i <= n; i++) {
+		tempboard[i] = new int[m + 1];
+		tempvisited[i] = new int[m + 1];
+	}
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= m; j++) {
+			tempboard[i][j] = board[i][j];
+			tempvisited[i][j] = 0;
 			if (board[i][j] == 2) {
 				q.push({ i,j });
-				visited[i][j] = true;
+				tempvisited[i][j] = 1;
 			}
-		}
-	}
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			temp[i][j] = board[i][j];
 		}
 	}
 
+	for (int i = 0; i < temp.size(); i++) {
+		tempboard[temp[i].x][temp[i].y] = 1;
+	}
 	while (!q.empty()) {
-		int x = q.front().first;
-		int y = q.front().second;
+		int x = q.front().x;
+		int y = q.front().y;
 		q.pop();
 		for (int i = 0; i < 4; i++) {
-			int nx = x + gox[i];
-			int ny = y + goy[i];
-			if (nx < 0 || nx >= n || ny < 0 || ny >= m || visited[nx][ny] || temp[nx][ny] == 1) continue;
-			else if (!visited[nx][ny] && temp[nx][ny] == 0) {
-				temp[nx][ny] = 2;
+			int nx = x + gox[i], ny = y + goy[i];
+			if (nx<1 || nx>n || ny<1 || ny>m || tempvisited[nx][ny] || tempboard[nx][ny] == 1 || tempboard[nx][ny] == 2) continue;
+			else if (!tempvisited[nx][ny] && tempboard[nx][ny] == 0) {
+				tempboard[nx][ny] = 2;
 				q.push({ nx,ny });
-				visited[nx][ny] = true;
+				tempvisited[nx][ny] = 1;
 			}
 		}
 	}
-	int cnt = 0;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (temp[i][j] == 0) cnt++;
+	int ans = 0;
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= m; j++) {
+			if (tempboard[i][j] == 0) ans++;
 		}
 	}
-	ans = max(ans, cnt);
+    for(int i=1;i<=n;i++){ 
+        delete[] tempboard[i];
+        delete[] tempvisited[i];
+    }
+    delete[] tempboard;
+    delete[] tempvisited;
+	return ans;
 }
-void dfs(int index,int cnt) {
-	if (index >= n * m) return;
-	if (cnt == 3) {
-		bfs();
+void go(int here,int cnt,int depth,int **board,int *visited,vector<position> &v,vector<position> &temp,int n,int m,int &ans) {
+	if (cnt == depth) {
+		ans=max(ans,bfs(board,temp,n,m));
 		return;
 	}
-	for (int i = index; i < n*m; i++) {
-		int x = i / m, y = i % m;
-		if (!visit[i] && board[x][y]==0) {
-			visit[i] = true;
-			board[x][y] = 1;
-			dfs(index + 1, cnt + 1);
-			board[x][y] = 0;
-			visit[i] = false;
+	for (int i = here; i < v.size(); i++) {
+		if (!visited[i]) {
+			visited[i] = 1;
+			temp.push_back(v[i]);
+			go(i + 1, cnt + 1, depth, board, visited, v, temp,n,m,ans);
+			temp.pop_back();
+			visited[i] = 0;
 		}
 	}
 }
 int main() {
+	int n, m;
 	scanf("%d%d", &n, &m);
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
+	int** board = new int* [n + 1];
+	int area = (n + 1) * (m + 1);
+	int* visited = new int[area + 1];
+	for (int i = 0; i <n * m; i++) visited[i] = 0;
+	vector<position> v,temp;
+	for (int i = 1; i <= n; i++) {
+		board[i] = new int[m + 1];
+	}
+	for (int i = 1; i <= n; i++) {
+		for (int j = 1; j <= m; j++) {
 			scanf(" %d", &board[i][j]);
+			if (board[i][j] == 0) {
+				v.push_back({ i,j });
+			}
 		}
 	}
-	dfs(0, 0);
+	int ans = 0;
+	go(0, 0, 3,board,visited,v,temp,n,m,ans);
 	printf("%d\n", ans);
+    for(int i=1;i<=n;i++) delete[] board[i];
+    delete[] board;
+    delete[] visited;
 	return 0;
 }

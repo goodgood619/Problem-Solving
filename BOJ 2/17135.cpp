@@ -17,115 +17,107 @@
 using namespace std;
 typedef long long ll;
 #define INF 1000000000
-#define mod 1000000009
-//typedef pair<int, int> P;
-//typedef pair<pair<int,int>,int> PP;
-typedef pair<pair<int, int>, pair<int, int>> PPP;
-int gox[4] = { 0,1, -1,0 };
-int goy[4] = { 1,0, 0,-1 };
-int n, m, d,ans;
-int board[17][17];
-int Copy[17][17];
-bool visited[17];
-struct P{
-	int x, y;
+#define mod 1000000007
+typedef pair<int, int> P;
+typedef pair<pair<int, int>, int> PP;
+typedef pair<int, pair<int, int>> PPP;
+typedef pair<pair<int, int>, pair<int, int>> PPPP;
+int gox[4] = { -1,0,1,0 };
+int goy[4] = { 0,1,0,-1 };
+struct position {
+	int x;
+	int y;
+	int dist;
 };
-struct PP {
-	int dist, x, y;
-};
-vector<P> v, temp;
-bool compare(const PP &a,const PP &b) {
+int check(int **tempboard,int n,int m) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
+			if (tempboard[i][j] == 1) return 1;
+		}
+	}
+	return 0;
+}
+void movedown(int **tempboard,int n,int m) {
+	for (int i = n - 1; i >= 0; i--) {
+		for (int j = 0; j < m; j++) {
+			if(i!=n-1) tempboard[i + 1][j] = tempboard[i][j];
+		}
+	}
+	for (int j = 0; j < m; j++) tempboard[0][j] = 0;
+}
+bool compare(const position &a,const position &b) {
 	if (a.dist != b.dist) return a.dist < b.dist;
 	if (a.y != b.y) return a.y < b.y;
-	if (a.x != b.x) return a.x < b.x;
 }
-P bfs(int x,int y,int d) {
-	vector<PP> ttt;
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= m; j++) {
-			if (Copy[i][j] == 1) {
-				int dist = abs(x - i) + abs(y - j);
-				if (dist > d) continue;
-				ttt.push_back({dist,i,j});
-			}
+int go2(int **board,int n,int m,int d) {
+	int** tempboard = new int*[n + 1];
+	for (int i = 0; i <= n; i++) tempboard[i] = new int[m];
+	for (int i = 0; i <= n; i++) {
+		for (int j = 0; j < m; j++) {
+			tempboard[i][j] = board[i][j];
 		}
 	}
-	if (ttt.size() == 0) return { 0,0 };
-	else {
-		sort(ttt.begin(), ttt.end(), compare);
-		return {ttt[0].x, ttt[0].y};
-	}
-}
-bool check() {
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= m; j++) {
-			if (Copy[i][j] == 1) return false;
-		}
-	}
-	return true;
-}
-void down() {
-	for (int i = n; i >= 1; i--) {
-		for (int j = 1; j <= m; j++) {
-			Copy[i + 1][j] = Copy[i][j];
-			if (i + 1 > n) Copy[i + 1][j] = 0;
-			if(Copy[i][j]==1) Copy[i][j] = 0;
-		}
-	}
-}
-void dfs(int index,int cnt,int depth) {
-	if (cnt == depth) {
-		memset(Copy, 0, sizeof(Copy));
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= m; j++) {
-				Copy[i][j] = board[i][j];
-			}
-		}
-		int cnt2 = 0;
-		while (1) {
-			bool attacked[17][17] = { false, };
-			for (int i = 0; i < temp.size(); i++) {
-				P p = bfs(temp[i].x, temp[i].y, d);
-				if (p.x == 0) continue;
-				else {
-					attacked[p.x][p.y] = true;
-				}
-			}
-			for (int i = 1; i <= n; i++) {
-				for (int j = 1; j <= m; j++) {
-					if (attacked[i][j]) {
-						cnt2++;
-						Copy[i][j] = 0;
+	int attacked = 0;
+	while (true) {
+		vector<position> shooted;
+		for (int j = 0; j < m; j++) {
+			if (tempboard[n][j] == 2) {
+				vector<position> v;
+				for (int k = 0; k < n; k++) {
+					for (int p = 0; p < m; p++) {
+						if (tempboard[k][p] == 1 && abs(n-k)+abs(j-p)<=d) {
+							v.push_back({ k,p,abs(n - k) + abs(j - p) });
+						}
 					}
 				}
+				sort(v.begin(), v.end(), compare);
+				if(v.size()>=1)shooted.push_back(v[0]);
 			}
-			down();
-			if (check()) break;
 		}
-		ans = max(ans, cnt2);
+
+		for (int i = 0; i < shooted.size(); i++) {
+			int x = shooted[i].x, y = shooted[i].y;
+			if (tempboard[x][y] == 1) {
+				tempboard[x][y] = 0;
+				attacked++;
+			}
+		}
+		movedown(tempboard,n,m);
+		if (!check(tempboard, n, m)) break;
+
+	}
+	return attacked;
+}
+void go(int here,int cnt,int depth,int **board,int *visited,int n,int m,int &ans,int d) {
+	if (cnt==depth) {
+		ans= max(ans,go2(board,n,m,d));
 		return;
 	}
-	for (int i = index; i < v.size(); i++) {
+	for (int i = here; i < m; i++) {
 		if (!visited[i]) {
-			visited[i] = true;
-			temp.push_back(v[i]);
-			dfs(i + 1, cnt + 1, depth);
-			temp.pop_back();
-			visited[i] = false;
+			visited[i] = 1;
+			board[n][i] = 2; //궁수
+			go(i + 1, cnt + 1, depth, board, visited,n, m,ans,d);
+			board[n][i] = 0;
+			visited[i] = 0;
 		}
 	}
 }
 int main() {
+	int n, m, d;
 	scanf("%d%d%d", &n, &m, &d);
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= m; j++) {
+	int** board = new int*[n + 1];
+	int* visited = new int[m];
+	for (int i = 0; i <= n; i++) board[i] = new int[m];
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < m; j++) {
 			scanf(" %d", &board[i][j]);
 		}
 	}
-	for (int j = 1; j <= m; j++) {
-		v.push_back({ n + 1,j });
-	}
-	dfs(0, 0, 3);
+	for (int i = 0; i < m; i++) visited[i] = 0;
+	for (int j = 0; j < m; j++) board[n][j] = 0;
+	int ans = 0;
+	go(0, 0, 3, board, visited,n,m,ans,d);
 	printf("%d\n", ans);
 	return 0;
 }

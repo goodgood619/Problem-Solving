@@ -20,156 +20,126 @@ typedef long long ll;
 #define mod 1000000007
 typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
-int gox[4] = { 0,1,-1,0 };
-int goy[4] = { 1,0,0,-1 };
-int board[51][51];
-int n, m, t,sx=-1,sy=-1,ex,ey;
-void check1(int sx,int sy) {
-	deque<int> d;
-	for (int j = sy + 1; j <= m; j++) {
-		d.push_back(board[sx][j]);
-		board[sx][j] = 0;
+typedef pair<int, pair<int, int>> PPP;
+typedef pair<pair<int, int>, pair<int, int>> PPPP;
+int gox[4] = {0,-1,0,1 };
+int goy[4] = { 1,0,-1,0 };
+struct position {
+	int x;
+	int y;
+};
+void upclean(int cx,int cy,int r,int c,int **board) {
+	int x = cx, y = cy, rs = 0, cs = 0;
+	int top = board[x][y];
+	for (int i = x; i > 0; i--) {
+		board[i][cy] = board[i - 1][cy];
 	}
-	for (int i = sx-1; i >= 1; i--) {
-		d.push_back(board[i][m]);
-		board[i][m] = 0;
+	for (int j = cy; j < c - 1; j++) {
+		board[0][j] = board[0][j + 1];
 	}
-	for (int j = m-1; j >= 1; j--) {
-		d.push_back(board[1][j]);
-		board[1][j] = 0;
+	for (int i = 0; i < cx; i++) {
+		board[i][c - 1] = board[i + 1][c - 1];
 	}
-	for (int i = 2; i < sx; i++) {
-		d.push_back(board[i][1]);
-		board[i][1] = 0;
+	for (int j = c - 1; j > 1; j--) {
+		board[cx][j] = board[cx][j - 1];
 	}
-
-
-	for (int j = sy + 2; j <= m; j++) {
-		board[sx][j] = d.front();
-		d.pop_front();
-	}
-	for (int i = sx-1; i >= 1; i--) {
-		board[i][m] = d.front();
-		d.pop_front();
-	}
-	for (int j = m-1; j >= 1; j--) {
-		board[1][j] = d.front();
-		d.pop_front();
-	}
-	for (int i = 2; i < sx; i++) {
-		board[i][1] = d.front();
-		d.pop_front();
-	}
-
+	board[cx][1] = 0;
+	board[cx][cy] = -1;
 }
-void check2(int ex,int ey) {
-	deque<int> d;
-	for (int j = ey + 1; j <= m; j++) {
-		d.push_back(board[ex][j]);
-		board[ex][j] = 0;
+void downclean(int cx2, int cy2,int r,int c,int **board) {
+	int x = cx2, y = cy2, rs = 0, cs = 0;
+	int top = board[cx2][cy2];
+	for (int i = x; i < r-1; i++) {
+		board[i][cy2] = board[i + 1][cy2];
 	}
-	for (int i = ex+1; i<=n; i++) {
-		d.push_back(board[i][m]);
-		board[i][m] = 0;
+	for (int j = cy2; j < c - 1;j++) {
+		board[r - 1][j] = board[r - 1][j + 1];
 	}
-	for (int j = m-1; j >= 1; j--) {
-		d.push_back(board[n][j]);
-		board[n][j] = 0;
+	for (int i = r - 1;i>cx2; i--) {
+		board[i][c - 1] = board[i - 1][c - 1];
 	}
-	for (int i = n-1; i >ex; i--) {
-		d.push_back(board[i][1]);
-		board[i][1] = 0;
+	for (int j = c - 1; j > 1;j--) {
+		board[cx2][j] = board[cx2][j - 1];
 	}
-
-
-	for (int j = ey + 2; j <= m; j++) {
-		board[ex][j] = d.front();
-		d.pop_front();
-	}
-	for (int i = ex+1; i<=n; i++) {
-		board[i][m] = d.front();
-		d.pop_front();
-	}
-	for (int j = m - 1; j >= 1; j--) {
-		board[n][j] = d.front();
-		d.pop_front();
-	}
-	for (int i = n-1; i > ex; i--) {
-		board[i][1] = d.front();
-		d.pop_front();
-	}
-
+	board[cx2][1] = 0;
+	board[cx2][cy2] = -1;
 }
-void bfs() {
-	int cnt = 0;
+void bfs(int r,int c,int cx,int cy,int cx2,int cy2,int t,int** board) {
 	for (int i = 1; i <= t; i++) {
-		queue<P> q;
-		int temp = 0;
-		int Copy[51][51] = { 0, };
-		map<P, int> mm;
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= m; j++) {
-				if (board[i][j] > 0) {
-					q.push({ i,j });
+		int** tempboard = new int* [r];
+		for (int j = 0; j < r; j++) {
+			tempboard[j] = new int[c];
+		}
+		queue<position> q;
+		map<pair<int,int>, int> cnt;
+		for (int k = 0; k < r; k++) {
+			for (int p = 0; p < c; p++) {
+				tempboard[k][p] = 0;
+				if (board[k][p] > 0) {
+					q.push({ k,p });
 				}
 			}
 		}
-
 		while (!q.empty()) {
-			int x = q.front().first;
-			int y = q.front().second;
+			int x = q.front().x;
+			int y = q.front().y;
 			q.pop();
 			for (int i = 0; i < 4; i++) {
-				int nx = x + gox[i];
-				int ny = y + goy[i];
-				if (nx<1 || nx>n || ny<1 || ny>m || board[nx][ny] == -1) continue;
+				int nx = x + gox[i], ny = y + goy[i];
+				if (nx < 0 || nx >= r || ny < 0 || ny >= c || board[nx][ny] == -1) continue;
 				else {
-					Copy[nx][ny]+= board[x][y] / 5;
-					mm[{x, y}]++;
+					tempboard[nx][ny] += (board[x][y] / 5);
+					cnt[{x, y}]++;
 				}
 			}
 		}
 
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= m; j++) {
-				board[i][j] = board[i][j] - board[i][j] / 5 * mm[{i, j}];
+		for (int i = 0; i < r; i++) {
+			for (int j = 0; j < c; j++) {
+				board[i][j] = board[i][j] - board[i][j] / 5 * cnt[{i, j}];
 			}
 		}
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= m; j++) {
-				board[i][j]=Copy[i][j] + board[i][j];
+		for (int i = 0; i < r; i++) {
+			for (int j = 0; j < c; j++) {
+				if (tempboard[i][j] == -1) continue;
+				board[i][j] += tempboard[i][j];
 			}
 		}
-
-		check1(sx, sy);
-		check2(ex, ey);
-
-		for (int i = 1; i <= n; i++) {
-			for (int j = 1; j <= m; j++) {
-				if (board[i][j] == -1) continue;
-				temp += board[i][j];
-			}
-		}
-		cnt = temp;
+		upclean(cx,cy,r,c,board);
+		downclean(cx2, cy2,r,c, board);
+		for (int j = 0; j < r; j++) delete[] tempboard[j];
+		delete[] tempboard;
 	}
-	printf("%d\n", cnt);
 }
 int main() {
-	scanf("%d%d%d", &n, &m, &t);
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= m; j++) {
+	int r, c, t;
+	scanf("%d%d%d", &r, &c, &t);
+	int** board = new int* [r];
+	for (int i = 0; i < r; i++) board[i] = new int[c];
+	int cx = -1, cy = -1,cx2=-1,cy2=-1;
+	for (int i = 0; i < r; i++) {
+		for (int j = 0; j < c; j++) {
 			scanf(" %d", &board[i][j]);
-			if (board[i][j] == -1) {
-				if (sx == -1 && sy == -1) {
-					sx = i, sy = j;
-				}
-				else {
-					ex = i, ey = j;
-				}
+			if (board[i][j] == -1 && cx==-1) {
+				cx = i, cy = j;
+			}
+			else if (board[i][j] == -1 && cx != -1) {
+				cx2 = i;
+				cy2 = j;
 			}
 		}
 	}
 
-	bfs();
+	bfs(r,c,cx, cy, cx2, cy2,t, board);
+	int ans = 0;
+	for (int i = 0; i < r; i++) {
+		for (int j = 0; j < c; j++) {
+			if (board[i][j] == -1) continue;
+			ans += board[i][j];
+		}
+	}
+	printf("%d\n", ans);
+	for (int i = 0; i < r; i++) delete[] board[i];
+	delete[] board;
 	return 0;
 }

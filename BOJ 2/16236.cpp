@@ -20,63 +20,86 @@ typedef long long ll;
 #define mod 1000000007
 typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
-typedef pair<double, pair<int, int>> PPP;
+typedef pair<int, pair<int, int>> PPP;
 typedef pair<pair<int, int>, pair<int, int>> PPPP;
 int gox[4] = { -1,0,1,0 };
 int goy[4] = { 0,1,0,-1 };
-int t, Case = 1,n,sx,sy;
-int board[20][20];
-vector<pair<pair<int, int>, int>> v;
-void bfs(int level) {
-	queue<pair<pair<int, int>, int>> q;
-	bool visited[20][20] = { false, };
-	q.push({ { sx,sy }, 0 });
-	visited[sx][sy] = true;
-	v.clear();
-	while(!q.empty()) {
-		int x = q.front().first.first;
-		int y = q.front().first.second;
-		int time = q.front().second;
+struct position {
+	int x;
+	int y;
+	int dist;
+};
+void reset(int** visited, int n) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			visited[i][j] = 0;
+		}
+	}
+}
+void bfs(int sharkx,int sharky,int **board,int n,vector<position> &eatok,int sharklevel) {
+	int** visited = new int*[n];
+	for (int i = 0; i < n; i++) visited[i] = new int[n];
+	reset(visited,n);
+	visited[sharkx][sharky] = 1;
+	queue<position> q;
+	q.push({ sharkx,sharky,0 });
+	while (!q.empty()) {
+		int x = q.front().x;
+		int y = q.front().y;
+		int dist = q.front().dist;
 		q.pop();
 		for (int i = 0; i < 4; i++) {
 			int nx = x + gox[i], ny = y + goy[i];
-			if (nx < 0 || nx >= n || ny <0 || ny >= n || visited[nx][ny] || level < board[nx][ny]) continue;
-			else if (!visited[nx][ny] && level >= board[nx][ny]) {
-				q.push({ { nx,ny }, time + 1 });
-				visited[nx][ny] = true;
-				if (level > board[nx][ny] && board[nx][ny]>0) v.push_back({ { nx,ny }, time + 1 });
+			if (nx < 0 || nx >= n || ny < 0 || ny >= n || visited[nx][ny] || sharklevel < board[nx][ny]) continue;
+			else {
+				q.push({ nx,ny,dist + 1 });
+				visited[nx][ny] = 1;
+				if (board[nx][ny] != 0 && sharklevel>board[nx][ny]) {
+					eatok.push_back({ nx,ny,dist + 1 });
+				}
 			}
 		}
 	}
 }
-bool compare(const pair<pair<int,int>,int> &a,const pair<pair<int,int>,int> &b) {
-	if (a.second != b.second) return a.second < b.second;
-	if (a.first.first != b.first.first) return a.first.first < b.first.first;
-	if (a.first.second != b.first.second) return a.first.second < b.first.second;
+bool compare(const position &a,const position &b) {
+	if (a.dist != b.dist) return a.dist < b.dist;
+	if (a.x != b.x) return a.x < b.x;
+	if (a.y != b.y) return a.y < b.y;
 }
 int main() {
+	int n;
 	scanf("%d", &n);
+	int** board = new int*[n];
+	int sharklevel = 2,sharkx = 0,sharky = 0;
+	int eat = 0;
+	for (int i = 0; i < n; i++) board[i] = new int[n];
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
 			scanf(" %d", &board[i][j]);
-			if (board[i][j] == 9) sx = i, sy = j;
+			if (board[i][j] == 9) {
+				sharkx = i, sharky = j;
+			}
 		}
 	}
 
-	int level = 2;
-	int eat = 0;
-	int ans = 0;
+	int Time = 0;
 	while (true) {
-		bfs(level);
-		if (v.size() == 0) break;
-		sort(v.begin(), v.end(), compare);
-		ans += v[0].second;
+		vector<position> eatok;
+		bfs(sharkx, sharky, board,n, eatok,sharklevel);
+		if (eatok.size() == 0) break;
+		sort(eatok.begin(), eatok.end(), compare);
+		int nx = eatok[0].x, ny = eatok[0].y,PlusTime = eatok[0].dist;
+		board[nx][ny] = 9;
+		board[sharkx][sharky] = 0;
 		eat++;
-		if (level == eat) { level++, eat = 0; }
-		board[sx][sy] = 0;
-		sx = v[0].first.first, sy = v[0].first.second;
-		board[sx][sy] = 9;
+		eatok.clear();
+		sharkx = nx, sharky = ny;
+		if (eat == sharklevel) {
+			eat = 0;
+			sharklevel++;
+		}
+		Time+=PlusTime;
 	}
-	printf("%d\n", ans);
+	printf("%d\n", Time);
 	return 0;
 }
