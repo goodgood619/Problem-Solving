@@ -21,105 +21,116 @@ typedef long long ll;
 typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
 typedef pair<int, pair<int, int>> PPP;
-int gox[8] = { 0, 0,1,-1,1,1,-1,-1 };
-int goy[8] = { -1, 1,0,0,-1,1,1,-1 };
-int n, m, k;
-int board[12][12];
-int Plus[12][12];
-int tree[1003][15][15];
-vector<PP> die;
-void spring() {
-	vector<PP> live;
-	for (int i = 1; i <= 500; i++) {
-		for (int j = 1; j <= n; j++) {
-			for (int k = 1; k <= n; k++) {
-				if (tree[i][j][k] == 0) continue;
-				int cnt = tree[i][j][k];
-				while (board[j][k] >= i && cnt>0) {
-					board[j][k] -= i; //나이만큼 양분을 먹음
-					cnt--;
-					live.push_back({ {j,k }, i + 1 });
+typedef pair<pair<int, int>, pair<int, int>> PPPP;
+int gox[8] = {0,-1,0,1,1,1,-1,-1 };
+int goy[8] = { 1,0,-1,0,-1,1,1,-1 };
+struct position {
+	int x;
+	int y;
+	int age;
+};
+void spring(vector<vector<vector<int>>> &v,int **board, vector<vector<vector<int>>> &Die,int &n) {
+	vector<vector<vector<int>>> live;
+	live.assign(n, vector<vector<int>>(n, vector<int>(0, 0)));
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			if (v[i][j].size() == 0) continue;
+			sort(v[i][j].begin(), v[i][j].end());
+			for (int k = 0; k < v[i][j].size(); k++) {
+				int age = v[i][j][k];
+				if (age <= board[i][j]) {
+					board[i][j] -= age;
+					live[i][j].push_back(age + 1);
 				}
-				while (cnt > 0) {
-					tree[i][j][k]--;
-					die.push_back({ { j,k }, i });
-					cnt--;
+				else {
+					Die[i][j].push_back(age);
 				}
 			}
 		}
 	}
+	//v.clear(); //단순대입을 해도 됨(값이 그대로 복사됨,생각해보니 어차피 n,n공간이 같네)
+	v = live;
+}
+void summer(int **board,vector<vector<vector<int>>> &Die,int &n) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			for (int k = 0; k < Die[i][j].size(); k++) {
+				board[i][j] += (Die[i][j][k] / 2);
+			}
+		}
+	}
 
-	for (int i = 0; i < live.size(); i++) {
-		int x = live[i].first.first, y = live[i].first.second, age = live[i].second;
-		tree[age][x][y]++;
-		tree[age - 1][x][y]--;
-	}
 }
-void summer() {
-	for (int i = 0; i < die.size(); i++) {
-		int x = die[i].first.first, y = die[i].first.second, age = die[i].second;
-		board[x][y] += (age / 2);
-	}
-	die.clear();
-}
-void fall() {
-	for (int i = 5; i <= 1000; i += 5) {
-		for (int j = 1; j <= n; j++) {
-			for (int k = 1; k <= n; k++) {
-				int cnt = tree[i][j][k];
-				if (cnt == 0) continue;
-				else {
-					for (int p = 0; p < 8; p++) {
-						int nx = j + gox[p];
-						int ny = k + goy[p];
-						if (nx<1 || nx>n || ny<1 || ny>n) continue;
-						else {
-							tree[1][nx][ny] += cnt;
-						}
+void fall(vector<vector<vector<int>>> &v, int **board,int &n) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			for (int k = 0; k < v[i][j].size(); k++) {
+				int age = v[i][j][k];
+				if (age % 5 == 0) {
+					for (int k = 0; k < 8; k++) {
+						int nx = i + gox[k], ny = j + goy[k];
+						if (nx < 0 || nx >= n || ny < 0 || ny >= n) continue;
+						v[nx][ny].push_back(1);
 					}
 				}
 			}
 		}
 	}
 }
-void winter() {
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			board[i][j] += Plus[i][j];
+void winter(int **board,int **earnboard,int &n) {
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			board[i][j] += earnboard[i][j];
 		}
 	}
 }
-int main() {
-	scanf("%d%d%d", &n, &m, &k);
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			board[i][j] = 5; //초기 배분 6
-		}
-	}
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			scanf(" %d", &Plus[i][j]);
-		}
-	}
-	for (int i = 1; i <= m; i++) {
-		int x, y, age;
-		scanf("%d%d%d", &x, &y, &age);
-		tree[age][x][y]++;
-	}
+void go(vector<vector<vector<int>>> &v,int k,int &n,int **board,int **earnboard) {
 	for (int i = 1; i <= k; i++) {
-		spring();
-		summer();
-		fall();
-		winter();
+		vector<vector<vector<int>>> Die;
+		Die.assign(n, vector<vector<int>>(n, vector<int>(0, 0)));
+		spring(v,board,Die,n);
+		summer(board,Die,n);
+		fall(v,board,n);
+		winter(board,earnboard,n);
 	}
-	int ans = 0;
-	for (int i = 1; i <= 500; i++) {
-		for (int j = 1; j <= n; j++) {
-			for (int k = 1; k <= n; k++) {
-				ans += tree[i][j][k];
-			}
+
+}
+int main() {
+	int n, m, k;
+	scanf(" %d%d%d", &n, &m,&k);
+	int** earnboard = new int*[n];
+	int** board = new int* [n];
+	for (int i = 0; i < n; i++) {
+		earnboard[i] = new int[n];
+		board[i] = new int[n];
+	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			scanf(" %d", &earnboard[i][j]);
+			board[i][j] = 5;
 		}
 	}
-	printf("%d\n", ans);
+	vector<vector<vector<int>>> v;
+	v.assign(n, vector<vector<int>>(n,vector<int>(0,0)));
+	for (int i = 0; i < m; i++) {
+		int x, y, age;
+		scanf(" %d%d%d", &x, &y, &age);
+		x--, y--;
+		v[x][y].push_back(age);
+	}
+	go(v, k, n,board, earnboard);
+	int ans = 0;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			ans += v[i][j].size();
+		}
+	}
+	printf("%d\n",ans);
+	for (int i = 0; i < n; i++) {
+		delete[] earnboard[i];
+		delete[] board[i];
+	}
+	delete[] earnboard;
+	delete[] board;
 	return 0;
 }
