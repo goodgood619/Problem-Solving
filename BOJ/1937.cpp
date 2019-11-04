@@ -1,4 +1,3 @@
-
 #include <cstdio>
 #include <algorithm>
 #include <cstring>
@@ -18,49 +17,52 @@
 using namespace std;
 typedef long long ll;
 #define INF 1000000000
-#define mod 1000000007
-typedef pair<int, ll> P;
+typedef pair<int, int> P;
 typedef pair<pair<int, int>, int> PP;
 typedef pair<int, pair<int, int>> PPP;
-int gox[4] = { 1,0,0,-1};
-int goy[4] = { 0,-1,1,0};
-int n;
-int board[505][505];
-int dp[505][505];
-int go(int x, int y) {
-	int &ret = dp[x][y];
-	if (ret != -1) return ret;
+int gox[4] = { 0,1,-1,0 };
+int goy[4] = { 1,0,0,-1 };
+int go(int x,int y,int **board,int **dp,int cnt,int &n) {
+
+	int& ret = dp[x][y];
+	if (ret != -1) {
+		return ret;
+	}
 	ret = 1;
 	for (int i = 0; i < 4; i++) {
-		int nx = x + gox[i];
-		int ny = y + goy[i];
-		if (nx<1 || nx>n || ny<1 || ny>n) continue;
-		if (board[x][y] < board[nx][ny]) {
-			int temp=max(ret,go(nx, ny) + 1);
-			ret = temp;
-		}
+		int nx = x + gox[i], ny = y + goy[i];
+		if (nx < 0 || nx >= n || ny < 0 || ny >= n || board[nx][ny] <= board[x][y]) continue;
+		ret = max(ret,go(nx, ny, board, dp,cnt+1, n)+1);
 	}
 	return ret;
 }
 int main() {
+	int n;
 	scanf("%d", &n);
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <=n; j++) {
+	int** board = new int* [n];
+	int** dp = new int*[n];
+	for (int i = 0; i < n; i++) {
+		board[i] = new int[n];
+		dp[i] = new int[n];
+	}
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
 			scanf(" %d", &board[i][j]);
+			dp[i][j] = -1;
 		}
 	}
-	memset(dp, -1, sizeof(dp));
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			go(i, j);
+	int ans = 1;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < n; j++) {
+			ans= max(ans,go(i, j, board, dp,1,n));
 		}
 	}
-	int Max = 0;
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			Max = max(Max, dp[i][j]);
-		}
+	printf("%d\n", ans);
+	for (int i = 0; i < n; i++) {
+		delete[] board[i];
+		delete[] dp[i];
 	}
-	printf("%d\n", Max);
-	return 0;
+	delete[] board;
+	delete[] dp;
+ 	return 0;
 }
