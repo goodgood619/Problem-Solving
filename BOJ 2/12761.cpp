@@ -1,70 +1,47 @@
-#include <cstdio>
-#include <algorithm>
-#include <queue>
+#include <bits/stdc++.h>
 using namespace std;
-queue <int> q;
-int a, b, n, m;
-int dist[100001];
-bool visited[100001];
-int gox[2] = { 1,-1 };
-int num[2];
-void bfs(int x) {
-	visited[x] = true;
-	q.push(x);
-	while (!q.empty()) {
-		int x = q.front();
-		q.pop();
-		for (int i = 0; i < 2; i++) {
-			int nx = x + gox[i];
-			if (nx < 0 || nx>100000 || visited[nx]) continue;
-			if (!visited[nx]) {
-				visited[nx] = true;
-				q.push(nx);
-				dist[nx] = dist[x] + 1;
-			}
-		}
-		for (int i = 0; i < 2; i++) {
-			int nx = x + num[i];
-			if (nx < 0 || nx>100000 || visited[nx]) continue;
-			if (!visited[nx]) {
-				visited[nx] = true;
-				q.push(nx);
-				dist[nx] = dist[x] + 1;
-			}
-		}
-		for (int i = 0; i < 2; i++) {
-			int nx = x-num[i];
-			if (nx < 0 || nx>100000 || visited[nx]) continue;
-			if (!visited[nx]) {
-				visited[nx] = true;
-				q.push(nx);
-				dist[nx] = dist[x] + 1;
-			}
-		}
-		for (int i = 0; i < 2; i++) {
-			int nx = x*num[i];
-			if (nx < 0 || nx>100000 || visited[nx]) continue;
-			if (!visited[nx]) {
-				visited[nx] = true;
-				q.push(nx);
-				dist[nx] = dist[x] + 1;
-			}
-		}
-		for (int i = 0; i < 2; i++) {
-			int nx = x*-(num[i]);
-			if (nx < 0 || nx>100000 || visited[nx]) continue;
-			if (!visited[nx]) {
-				visited[nx] = true;
-				q.push(nx);
-				dist[nx] = dist[x] + 1;
-			}
-		}
-	}
-	return;
+struct pos{
+    int here;
+    int dist;
+};
+void go(queue<pos> &q, int *visited,int &here,int &dist){
+    if(here>=0 && here<=100000 && !visited[here]){
+        visited[here] = 1;
+        q.push({here,dist+1});
+    }
 }
-int main(){
-	scanf("%d%d%d%d", &num[0], &num[1], &n, &m);
-	bfs(n);
-	printf("%d\n", dist[m]);
-	return 0;
+int bfs(int a,int b,int n,int m){
+    int *visited = new int[100002];
+    for(int i = 0; i<= 100000;i++) visited[i] = 0;
+    visited[n] = 1;
+    queue<pos> q;
+    q.push({n,0});
+    int ans = 1e9;
+    while(!q.empty()) {
+        int here = q.front().here;
+        int dist = q.front().dist;
+        if(here == m){
+            ans = min(ans,dist);
+            break;
+        }
+        q.pop();
+        int nx = here+1, ny = here-1,na = here+a, nb = here+b, mna = here-a, mnb = here-b,ga = here*a, gb = here*b;
+        go(q,visited,nx,dist);
+        go(q,visited,ny,dist);
+        go(q,visited,na,dist);
+        go(q,visited,nb,dist);
+        go(q,visited,mna,dist);
+        go(q,visited,mnb,dist);
+        go(q,visited,ga,dist);
+        go(q,visited,gb,dist);
+
+    }
+    return ans;
+}
+
+int main() {
+    int a,b,n,m;
+    scanf("%d%d%d%d",&a,&b,&n,&m);
+    printf("%d\n",bfs(a,b,n,m));
+    return 0;
 }
