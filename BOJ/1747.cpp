@@ -1,56 +1,39 @@
-#include <cstdio>
-#include <algorithm>
-#include <math.h>
-#include <vector>
-#include <queue>
-#include <cstring>
-#include <map>
-#include <climits>
-#include <functional>
-#include <list>
-#include <iostream>
-#include <string>
-#include <set>
+#include <bits/stdc++.h>
 using namespace std;
-int isprime[2000000];
-void go() {
-	for (int i = 2; i <= sqrt(2000000); i++){
-		if (isprime[i] == 0) continue;
-		for (int j = i*i; j <= 2000000; j += i) {
-			isprime[j] = 0;
-		}
-	}
-
-}
-int main(){
-	for (int i = 2; i <= 2000000;i++) isprime[i]=i;
-    go();
+typedef long long ll;
+int gox[4] = {0,0,-1,1};
+int goy[4] = {1,-1,0,0};
+int main() {
     int n;
     scanf("%d",&n);
-    for(int i=n;;i++){
-        if(isprime[i]==0) continue;
-        else{
-            vector<char> ans;
-            int temp=i;
-            bool no=false;
-            while(temp>=1){
-                ans.push_back(temp%10+'0');
-                temp/=10;
-            }
-            reverse(ans.begin(),ans.end());
-            for(int i=0;i<ans.size()/2;i++){
-                if(ans[i]==ans[ans.size()-1-i]) continue;
-                else{
-                    no=true;
-                    break;
-                }
-            }
-        if(!no){
-            printf("%d\n",i);
-            return 0;
-        }
+    int *notprime = new int[1004000];
+    notprime[1] = 1;
+    for(int i = 2; i<=1004000;i++) notprime[i] = 0;
+
+    for(int i = 2; i<=sqrt(1004000) ; i++){
+        for(int j = i*i ; j<=1004000 ;j+=i){
+            notprime[j] = 1;
         }
     }
-
-	return 0;
+    int ok = 0;
+    for(int i = n ;;i++) {
+        if(notprime[i] != 0 ) continue;
+        string s = to_string(i);
+        int temp = 0 ;
+        for(int j =0,k=s.size()-1 ;j<=k;j++,k--){
+            if(s[j] != s[k]) {
+                temp++;
+                break;
+            }
+        }
+        if(!temp){
+            ok = 1;
+        }
+        if(ok == 1){
+            printf("%d\n",i);
+            break;
+        }
+    }
+    delete[] notprime;
+    return 0;
 }

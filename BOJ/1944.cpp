@@ -1,97 +1,114 @@
-#include <cstdio>
-#include <algorithm>
-#include <cstring>
-#include <vector>
-#include <queue>
-#include <map>
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <set>
-#include <list>
-#include <climits>
-#include <string.h>
-#include <deque>
-#include <functional>
+#include <bits/stdc++.h>
 using namespace std;
 typedef long long ll;
-#define INF 1000000000
-typedef pair<int, int> P;
-typedef pair<pair<int, int>, pair<int, int>> PP;
-typedef pair<int, pair<int, int>> PPP;
-int gox[4] = { 0,1,-1,0 };
-int goy[4] = { 1,0,0,-1 };
-using namespace std;
-int n, m,total,Max;
-bool visited[200005];
-char board[51][51];
-vector<vector<pair<int, int>>> a;
-void prim(int st) {
-	priority_queue<P, vector<P>, greater<P>> pq;
-	pq.push({ 0,st });
-	while (!pq.empty()) {
-		int cost = pq.top().first;
-		int here = pq.top().second;
-		pq.pop();
-		if (visited[here]) continue;
-		visited[here] = true;
-		total += cost;
-		Max = max(Max, cost);
-		for (int i = 0; i < a[here].size(); i++) {
-			int next = a[here][i].first;
-			int nextcost = a[here][i].second;
-			if (!visited[next]) pq.push({ nextcost,next });
-		}
-	}
+int gox[4] = {0,0,-1,1};
+int goy[4] = {1,-1,0,0};
+struct pos{
+    int x;
+    int y;
+    int dist;
+};
+struct pos2{
+    int here;
+    int next;
+    int dist;
+};
+struct cmp{
+    bool operator()(pos2 a,pos2 b){
+        if(a.dist != b.dist) return a.dist> b.dist;
+        if(a.here != b.here) return a.here > b.here;
+        if(a.next != b.next) return a.next > b.next;
+    }
+};
+void bfs(pos &a,int st, char **board,int n,vector<pos> &v,priority_queue<pos2,vector<pos2>,cmp> &pq) {
+    vector<pos> temp;
+    int x= a.x, y = a.y;
+    bool **visited = new bool*[n];
+    for(int i = 0;i < n ;i++) visited[i] = new bool[n];
+    for(int i=0;i < n; i++) {
+        for(int j=0 ;j < n; j++) {
+            visited[i][j] = false;
+        }
+    }
+    visited[x][y] = true;
+    queue<pos> q;
+    q.push({x,y,0});
+    while(!q.empty()) {
+        int x = q.front().x;
+        int y = q.front().y;
+        int dist = q.front().dist;
+        q.pop();
+        for(int i =0 ;i<4;i++) {
+            int nx = x+gox[i], ny = y+goy[i];
+            if(nx < 0 || nx>=n || ny<0 || ny>=n || board[nx][ny] =='1' || visited[nx][ny]) continue;
+            else {
+                visited[nx][ny] = true;
+                if(board[nx][ny] == 'S' || board[nx][ny] == 'K') {
+                    int idx = -1;
+                    for(int j =0 ;j<v.size();j++){
+                        if(nx == v[j].x && ny == v[j].y) {
+                            idx = j;
+                            break;
+                        }
+                    }
+                    pq.push({st,idx,dist+1});
+                }
+                q.push({nx,ny,dist+1});
+            }
+        }
+    }
+    for(int i = 0 ;i < n;i++) delete[] visited[i];
+    delete[] visited;
 }
-int bfs(int sx,int sy,int ex,int ey) {
-	queue<PPP> q;
-	q.push({ 0,{sx,sy} });
-	bool visited2[51][51] = { false, };
-	visited2[sx][sy] = true;
-	while (!q.empty()) {
-		int dist = q.front().first;
-		int x = q.front().second.first;
-		int y = q.front().second.second;
-		q.pop();
-		if (ex == x && ey == y) return dist;
-		for (int i = 0; i < 4; i++) {
-			int nx = x + gox[i];
-			int ny = y + goy[i];
-			if (nx<1 || nx>n || ny<1 || ny>n || board[nx][ny] == '1' || visited2[nx][ny]) continue;
-			if (!visited2[nx][ny]) {
-				visited2[nx][ny] = true;
-				q.push({ dist + 1,{nx,ny} });
-			}	
-		}
-	}
-	return 1e9;
+int find(int u,int *parent){
+    if(u == parent[u]) return parent[u];
+    return parent[u] = find(parent[u],parent);
+}
+void uni(int u,int v,int *parent){
+    u = find(u,parent);
+    v = find(v,parent);
+    if(u == v) return;
+    parent[u] = v;
 }
 int main() {
-	scanf("%d%d", &n, &m);
-	a.resize(m + 1);
-	vector<pair<int, int>> v;
-	for (int i = 1; i <= n; i++) {
-		for (int j = 1; j <= n; j++) {
-			scanf(" %c", &board[i][j]);
-			if (board[i][j] == 'S' || board[i][j] == 'K') {
-				v.push_back({ i,j });
-			}
-		}
-	}
+    int n,m;
+    scanf("%d%d",&n,&m);
+    vector<pos> v;
+    char **board = new char*[n];
+    for(int i = 0 ; i<n;i++) board[i] = new char[n];
+    for(int i = 0 ;i < n;i++){
+        for(int j =0 ;j<n;j++){
+            scanf(" %c",&board[i][j]);
+            if(board[i][j] == 'S' || board[i][j] == 'K'){
+                    v.push_back({i,j,0});
+            }
+        }
+    }
+    priority_queue<pos2,vector<pos2>,cmp> pq;
+    for(int i =0 ;i<v.size();i++){
+        bfs(v[i],i,board,n,v,pq);
+    }
 
-	for (int i = 0; i < v.size(); i++) {
-		for (int j = i + 1; j < v.size(); j++) {
-			int dist = bfs(v[i].first, v[i].second, v[j].first, v[j].second);
-			if (dist == 1e9) {
-				printf("-1\n");
-				return 0;
-			}
-			a[i].push_back({ j,dist });
-			a[j].push_back({ i,dist });
-		}
-	}
-	prim(0);
-	printf("%d\n", total);
-	return 0;
+    int cnt = 0;
+    int ans = 0;
+    int *parent = new int[(int)v.size()];
+    for(int i = 0 ;i<v.size();i++) parent[i] = i;
+    while(!pq.empty()) {
+        int here = pq.top().here;
+        int next = pq.top().next;
+        int dist = pq.top().dist;
+        pq.pop();
+        int heretop = find(here,parent), nexttop = find(next,parent);
+        if(heretop != nexttop){
+            uni(here,next,parent);
+            ans += dist;
+            cnt++;
+        }
+    }
+    cnt == v.size()-1 ? printf("%d\n",ans) : printf("-1\n");
+    delete[] parent;
+    v.clear();
+    for(int i = 0;i<n;i++) delete[] board[i];
+    delete[] board;
+    return 0;
 }
