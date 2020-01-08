@@ -1,87 +1,73 @@
-#include <cstdio>
-#include <algorithm>
-#include <vector>
-#include <queue>
-#include <cstring>
+#include <bits/stdc++.h>
 using namespace std;
-typedef long long ll;
-int h = 1;
-int n, m, k;
-typedef struct {
-	ll value;
-	ll lazy;
-}Seg;
-Seg seg[2500005];
-void initupdate(int index, ll value) {
-	index += h - 1;
-	seg[index].value = value;
-	while (index > 1) {
-		index /= 2;
-		seg[index].value = seg[index * 2].value + seg[index * 2 + 1].value;
-	}
+typedef int64_t ll;
+typedef int32_t Int;
+struct p {
+    ll value;
+    ll lazy;
+};
+void initupdate(int index, ll value,vector<p> &seg,int h) {
+    index += h - 1;
+    seg[index].value = value;
+    while (index > 1) {
+        index /= 2;
+        seg[index].value = seg[index * 2].value + seg[index * 2 + 1].value;
+    }
 }
-void update(int nodenum, int L, int R, ll value, int nodeleft, int noderight) {
-	// lazy가 남아있을때
-	if (seg[nodenum].lazy != 0) {
-		if (nodeleft<noderight) {
-			seg[nodenum * 2].lazy += seg[nodenum].lazy;
-			seg[nodenum * 2 + 1].lazy += seg[nodenum].lazy;
-		}
-		seg[nodenum].value += seg[nodenum].lazy*(noderight-nodeleft + 1);
-		seg[nodenum].lazy = 0;
-	}
-	if (nodeleft > R || noderight < L) return;
-	else if (L <= nodeleft && noderight <= R){
-		if (nodeleft<noderight){
-			seg[nodenum * 2].lazy += value;
-			seg[nodenum * 2 + 1].lazy += value;
-		}
-		seg[nodenum].value += value*(noderight -nodeleft + 1);
-		return;
-	}
-	int mid = (nodeleft + noderight)/2;
-	update(nodenum * 2, L, R, value, nodeleft, mid);
-	update(nodenum * 2 + 1, L, R, value, mid + 1, noderight);
-	//맨마지막에는 최종적인 상태를 업데이트해야하니까 추가되어야함
-	seg[nodenum].value = seg[nodenum * 2].value + seg[nodenum * 2 + 1].value;
+void u_lazy(int nodenum,int nodeleft,int noderight,vector<p> &seg) {
+    if(seg[nodenum].lazy == 0 ) return;
+    seg[nodenum].value += (noderight-nodeleft + 1) * seg[nodenum].lazy;
+    if(nodeleft != noderight) {
+        seg[nodenum*2].lazy +=seg[nodenum].lazy;
+        seg[nodenum*2+1].lazy +=seg[nodenum].lazy;
+    }
+    seg[nodenum].lazy = 0;
 }
-ll query(int nodenum, int L, int R, int nodeleft, int noderight){
-	if (seg[nodenum].lazy != 0) {
-		if (nodeleft<noderight) {
-			seg[nodenum * 2].lazy += seg[nodenum].lazy;
-			seg[nodenum * 2 + 1].lazy += seg[nodenum].lazy;
-		}
-		seg[nodenum].value += seg[nodenum].lazy*(noderight - nodeleft + 1);
-		seg[nodenum].lazy = 0;
-	}
-	if (nodeleft > R || noderight < L) return 0;
-	else if (L <= nodeleft && noderight <= R) return seg[nodenum].value;
-	int mid = (nodeleft + noderight) / 2;
-	return query(nodenum * 2, L, R, nodeleft, mid) + query(nodenum * 2 + 1, L, R, mid + 1, noderight);
+void update(int nodenum,int left,int right,int nodeleft,int noderight,ll value, vector<p> &seg) {
+    u_lazy(nodenum,nodeleft,noderight,seg);
+    if(nodeleft > right || left > noderight) return;
+    else if(left<=nodeleft && noderight <= right) {
+        seg[nodenum].lazy += value;
+        u_lazy(nodenum,nodeleft,noderight,seg);
+        return;
+    }
+    int mid = (nodeleft+noderight) / 2;
+    update(nodenum*2,left,right,nodeleft,mid,value,seg);
+    update(nodenum*2+1,left,right,mid+1,noderight,value,seg);
+    seg[nodenum].value = seg[nodenum*2].value + seg[nodenum*2+1].value;
 }
-int main(){
-	scanf("%d%d%d", &n, &m, &k);
-	while (h < n) h *= 2;
-	for (int i = 1; i <= n; i++) {
-		ll num;
-		scanf("%lld", &num);
-		initupdate(i,num);
-	}
-	for (int i = 1; i <= m + k; i++) {
-		int what;
-		scanf("%d", &what);
-		if (what == 1){
-			int first, second;
-			ll value;
-			scanf("%d%d%lld", &first, &second, &value);
-			update(1,first, second, value, 1, h);
-		}
-		else if (what == 2) {
-			int left, right;
-			scanf("%d%d", &left, &right);
-			ll ans=query(1, left, right, 1,h);
-			printf("%lld\n", ans);
-		}
-	}
-	return 0;
+ll query(int nodenum,int left,int right,int nodeleft,int noderight,vector<p> &seg) {
+    u_lazy(nodenum,nodeleft,noderight,seg);
+    if(nodeleft > right || left > noderight) return 0;
+    else if(left <= nodeleft && noderight <= right) return seg[nodenum].value;
+    int mid = (nodeleft+noderight) / 2;
+    return query(nodenum*2,left,right,nodeleft,mid,seg) + query(nodenum*2+1,left,right,mid+1,noderight,seg);
+}
+int main() {
+    Int n,m,k,h=1;
+    scanf("%d%d%d",&n,&m,&k);
+    vector<p> seg;
+    while(h<n) h*=2;
+    seg.assign(h*2,{0,0});
+    for(int i=1;i<=n;i++){
+        ll value;
+        scanf("%lld",&value);
+        initupdate(i,value,seg,h);
+    }
+    for(int i=0;i<m+k;i++) {
+        Int a;
+        scanf("%d",&a);
+        if(a == 1) {
+            Int left,right;
+            ll value;
+            scanf("%d%d%lld",&left,&right,&value);
+            update(1,left,right,1,h,value,seg);
+        }
+        else {
+            Int left,right;
+            scanf("%d%d",&left,&right);
+            printf("%ld\n",query(1,left,right,1,h,seg));
+        }
+    }
+    return 0;
 }
