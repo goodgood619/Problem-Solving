@@ -1,34 +1,33 @@
 #include <cstdio>
-#include <algorithm>
-#include <iostream>
-#include <string.h>
 #include <cstdint>
-#include <vector>
 #include <string>
-#include <cstring>
-#include <map>
+#include <vector>
+#include <algorithm>
 using namespace std;
-typedef int64_t ll;
 typedef int32_t Int;
-struct p {
-    string a;
-    string b;
-};
+typedef int64_t ll;
+Int dp[21][21];
+void go(int n) {
+	for (int j = 1; j < n; j++) {
+		if (j % 2 && n-j<3) {
+			dp[n][j] += dp[n - 1][j];
+		}
+		else if (j%2 == 0 && n - j < 4) {
+			dp[n][j] += dp[n - 1][j];
+		}
+		dp[n][n] += dp[n - 1][j];
+	}
+}
 int main() {
-    Int n, m;
-    scanf("%d%d", &n, &m);
-    map<string, string> k;
-    for (int i = 0; i < n; i++) {
-        char* a = new char[21];
-        char* b = new char[21];
-        scanf("%s %s", a, b);
-        k[a] = b;
-    }
-    for (int i = 0; i < m; i++) {
-        char* f = new char[21];
-        scanf("%s", f);
-        printf("%s\n", k[f].c_str());
-   }
-   
-    return 0;
+	dp[1][1] = 1;
+	for (int i = 2; i <= 20; i++) {
+		go(i);
+	}
+	Int n,sum=0;
+	scanf("%d", &n);
+	for (int i = 1; i <= n; i++) {
+		sum += dp[n][i];
+	}
+	printf("%d\n", sum);
+	return 0;
 }
