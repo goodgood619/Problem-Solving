@@ -1,42 +1,36 @@
 import java.io.*;
-import java.util.Arrays;
+import java.util.*;
+
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+    static int[] gox = {0, 1, -1, 0};
+    static int[] goy = {1, 0, 0, -1};
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int n = Integer.parseInt(br.readLine().split(" ")[0]);
-        int[] a = new int[n];
-        String[] input2 = br.readLine().split(" ");
-        for(int i=0;i<n;i++) {
-            a[i] = Integer.parseInt(input2[i]);
+        int n = Integer.parseInt(br.readLine());
+        StringTokenizer st = new StringTokenizer(br.readLine());
+        HashMap<Integer, Integer> map = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            int num = Integer.parseInt(st.nextToken());
+            if (map.get(num) == null) {
+                map.put(num, 1);
+            } else {
+                int value = map.get(num);
+                value++;
+                map.remove(num);
+                map.put(num, value);
+            }
         }
-        Arrays.sort(a);
-        int m = Integer.parseInt(br.readLine().split(" ")[0]);
-        String[] input3 = br.readLine().split(" ");
-        for(int i=0;i<m;i++) {
-            int lower = lowerbound(0,n-1,a,Integer.parseInt(input3[i]));
-            int upper = upperbound(0,n-1,a,Integer.parseInt(input3[i]));
-            if(a[upper] == Integer.parseInt(input3[i])) upper++;
-            upper -= lower;
-            bw.write(upper + " ");
+
+        int m = Integer.parseInt(br.readLine());
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < m; i++) {
+            int num = Integer.parseInt(st.nextToken());
+            if (map.get(num) == null) bw.write(0 + " ");
+            else bw.write(map.get(num) + " ");
         }
         bw.flush();
         bw.close();
-    }
-    private static int lowerbound(int left,int right,int[] a,int num) {
-        while(left<right) {
-            int mid = (left+right) / 2;
-            if(a[mid]<num) left = mid+1;
-            else right = mid;
-        }
-        return right;
-    }
-    private static int upperbound(int left,int right,int[] a, int num) {
-        while(left<right) {
-            int mid = (left + right) / 2;
-            if(a[mid]<=num) left = mid + 1;
-            else right = mid;
-        }
-        return right;
     }
 }

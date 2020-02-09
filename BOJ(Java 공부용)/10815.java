@@ -3,35 +3,34 @@ import java.util.*;
 
 public class Main {
     static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
+    static int[] gox = {0, 1, -1, 0};
+    static int[] goy = {1, 0, 0, -1};
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int n = Integer.parseInt(br.readLine());
         StringTokenizer st = new StringTokenizer(br.readLine());
-        int n = Integer.parseInt(st.nextToken());
-        st = new StringTokenizer(br.readLine());
-        int[] arr = new int[n];
+        HashMap<Integer, Integer> map = new HashMap<>();
         for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(st.nextToken());
+            int num = Integer.parseInt(st.nextToken());
+            if (map.get(num) == null) {
+                map.put(num, 1);
+            } else {
+                int value = map.get(num);
+                value++;
+                map.remove(num);
+                map.put(num, value);
+            }
         }
-        Arrays.sort(arr);
-        st = new StringTokenizer(br.readLine());
-        int m = Integer.parseInt(st.nextToken());
+
+        int m = Integer.parseInt(br.readLine());
         st = new StringTokenizer(br.readLine());
         for (int i = 0; i < m; i++) {
             int num = Integer.parseInt(st.nextToken());
-            int idx = lowerbound(0, arr.length, num, arr);
-            if (idx<arr.length && arr[idx] == num) bw.write("1 ");
-            else bw.write("0 ");
+            if (map.get(num) == null) bw.write(0 + " ");
+            else bw.write(1 + " ");
         }
         bw.flush();
         bw.close();
-    }
-
-    private static int lowerbound(int left, int right, int num, int[] arr) {
-        while (left < right) {
-            int mid = (left + right) / 2;
-            if (arr[mid] < num) left = mid + 1;
-            else right = mid;
-        }
-        return right;
     }
 }
