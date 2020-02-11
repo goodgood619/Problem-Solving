@@ -24,19 +24,20 @@ public class Main {
     }
     private static void go(int here,int cnt,int depth,ArrayList<Integer> v,ArrayList<Integer> temp,HashSet<ArrayList<Integer>> set) throws IOException {
         if(cnt == depth) {
-            if(!set.contains(temp)) {
-                set.add(temp);
-                for(int i=0;i<temp.size();i++) {
-                    bw.write(temp.get(i)+" ");
+            ArrayList<Integer> newtemp=new ArrayList<>(temp);
+            if(!set.contains(newtemp)) {
+                set.add(newtemp);
+                for(int i=0;i<newtemp.size();i++) {
+                    bw.write(newtemp.get(i)+" ");
                 }
                 bw.write("\n");
             }
             return;
         }
         for(int i=here;i<v.size();i++) {
-                temp.add(v.get(i));
-                go(i,cnt + 1, depth, v, temp, set);
-                temp.remove(temp.size() - 1);
+            temp.add(v.get(i));
+            go(i,cnt + 1, depth, v, temp, set);
+            temp.remove(temp.size() - 1);
         }
     }
 }
