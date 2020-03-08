@@ -19,6 +19,7 @@ public class Main {
             long mid = (left + right) / 2, cnt = 0;
             for (int i = 0; i < arr.length; i++) {
                 cnt += (mid / arr[i]);
+                if (cnt >= m) break;
             }
             if (cnt < m) left = mid + 1;
             else {
