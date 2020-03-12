@@ -19,12 +19,12 @@ ll go(long b, long p, long mod) {
 	}
 }
 int main() {
-	ll* fact = new ll[1000001];
-	for (int i = 0; i <= 1000000; i++) fact[i] = 0;
+	ll* fact = new ll[4000001];
+	for (int i = 0; i <= 4000000; i++) fact[i] = 0;
 	ll p = 1000000007;
 	fact[0] = 1;
 	fact[1] = 1;
-	for (int i = 2; i <= 1000000; i++) {
+	for (int i = 2; i <= 4000000; i++) {
 		fact[i] = fact[i - 1] * i % p;
 	}
 	int n, k;
