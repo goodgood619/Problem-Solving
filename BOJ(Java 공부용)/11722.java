@@ -13,22 +13,23 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         int n = Integer.parseInt(st.nextToken());
+        st = new StringTokenizer(br.readLine());
         int[] arr = new int[n];
         int[] dp = new int[n];
         for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(br.readLine());
+            arr[i] = Integer.parseInt(st.nextToken());
             dp[i] = 1;
         }
         int max = 1;
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= i; j--) {
                 if (arr[j] < arr[i]) {
                     dp[i] = max(dp[i], dp[j] + 1);
                     max = max(max, dp[i]);
                 }
             }
         }
-        bw.write((n - max) + " ");
+        bw.write(max + " ");
         bw.flush();
         bw.close();
     }

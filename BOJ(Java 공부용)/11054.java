@@ -13,22 +13,35 @@ public class Main {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st = new StringTokenizer(br.readLine());
         int n = Integer.parseInt(st.nextToken());
+        st = new StringTokenizer(br.readLine());
         int[] arr = new int[n];
-        int[] dp = new int[n];
+        int[] dp1 = new int[n];
+        int[] dp2 = new int[n];
         for (int i = 0; i < n; i++) {
-            arr[i] = Integer.parseInt(br.readLine());
-            dp[i] = 1;
+            arr[i] = Integer.parseInt(st.nextToken());
+            dp1[i] = 1;
+            dp2[i] = 1;
         }
         int max = 1;
         for (int i = 0; i < n; i++) {
-            for (int j = 0; j < i; j++) {
+            for (int j = 0; j <= i; j++) {
                 if (arr[j] < arr[i]) {
-                    dp[i] = max(dp[i], dp[j] + 1);
-                    max = max(max, dp[i]);
+                    dp1[i] = max(dp1[i], dp1[j] + 1);
                 }
             }
         }
-        bw.write((n - max) + " ");
+        for (int i = n - 1; i >= 0; i--) {
+            for (int j = n - 1; j >= i; j--) {
+                if (arr[j] < arr[i]) {
+                    dp2[i] = max(dp2[i], dp2[j] + 1);
+                }
+            }
+        }
+        for (int i = 0; i < n; i++) {
+            max = max(max, dp1[i] + dp2[i]);
+        }
+        max--;
+        bw.write(max + " ");
         bw.flush();
         bw.close();
     }
