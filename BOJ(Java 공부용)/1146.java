@@ -7,34 +7,32 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        int t = Integer.parseInt(br.readLine());
-        while (t-- > 0) {
-            int n = Integer.parseInt(br.readLine());
-            long[][][] dp = new long[n + 1][n + 1][2];
-            for (int i = 0; i <= n; i++) {
-                for (int j = 0; j <= n; j++) {
-                    for (int k = 0; k < 2; k++) {
-                        dp[i][j][k] = -1;
-                    }
+        int n = Integer.parseInt(br.readLine());
+        int[][][] dp = new int[n + 1][n + 1][2];
+        for (int i = 0; i <= n; i++) {
+            for (int j = 0; j <= n; j++) {
+                for (int k = 0; k < 2; k++) {
+                    dp[i][j][k] = -1;
                 }
             }
-            long ans = 0;
-            boolean[] visited = new boolean[n + 1];
-            for (int i = 1; i <= n; i++) {
-                visited[i] = true;
-                ans += go(i, 1, 0, dp, visited, n);
-                visited[i] = true;
-                ans += go(i, 1, 1, dp, visited, n);
-                visited[i] = false;
-            }
-            if (n == 1) ans = 1;
-            bw.write(ans + "\n");
         }
+        int ans = 0;
+        boolean[] visited = new boolean[n + 1];
+        for (int i = 1; i <= n; i++) {
+            visited[i] = true;
+            ans += go(i, 1, 0, dp, visited, n);
+            visited[i] = true;
+            ans += go(i, 1, 1, dp, visited, n);
+            visited[i] = false;
+            ans %= 1000000;
+        }
+        if (n == 1) ans = 1;
+        bw.write((ans % 1000000) + "\n");
         bw.flush();
         bw.close();
     }
 
-    private static long go(int cur, int depth, int choose, long[][][] dp, boolean[] visited, int n) {
+    private static int go(int cur, int depth, int choose, int[][][] dp, boolean[] visited, int n) {
         if (depth == n) return 1;
         if (dp[cur][depth][choose] != -1) return dp[cur][depth][choose];
         dp[cur][depth][choose] = 0;
@@ -55,6 +53,7 @@ public class Main {
                 }
             }
         }
+        dp[cur][depth][choose] %= 1000000;
         return dp[cur][depth][choose];
     }
 }
