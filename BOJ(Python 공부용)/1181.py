@@ -1,13 +1,17 @@
-n = int(input())
+import sys
 
+sys.setrecursionlimit(50000000)
+
+n = int(sys.stdin.readline())
 v = []
 for i in range(n):
-    s = input()
-    length = len(s)
-    v.append((s,length))
+    word = sys.stdin.readline()
+    length = len(word)
+    v.append((word, length))
 
 v = list(set(v))
-v = sorted(v,key=lambda x: (x[1],x[0]))
+
+v.sort(key=lambda x: (x[1], x[0]))
 
 for i in v:
-    print("%s" %(i[0]))
+    print(i[0].strip("\n"))
