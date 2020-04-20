@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import sys
 t = int(input())
 
