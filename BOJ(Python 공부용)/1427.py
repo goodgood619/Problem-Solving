@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import sys
 
 sys.setrecursionlimit(50000000)

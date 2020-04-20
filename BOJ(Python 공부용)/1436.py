@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 n = input()
 n = int(n)
 num = 666

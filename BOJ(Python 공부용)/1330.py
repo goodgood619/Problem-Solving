@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 a,b = map(int,input().split())
 
 if a>b :

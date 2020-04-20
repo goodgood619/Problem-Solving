@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 def dfs(v) :
     print(v,end=" ")
     visited[v] = True
