@@ -18,14 +18,15 @@ using namespace std;
 typedef long long ll;
 #define mod 1000000009
 #define lim 1000000000
-typedef pair < int,int > P;
-typedef pair<int,pair<int, int>> PP;
+typedef pair < int, int > P;
+typedef pair<int, pair<int, int>> PP;
 typedef pair<pair<int, int>, pair<int, int>> PPP;
-int gox[4] = {-1,0,1,0 };
-int goy[4] = {0,1,0,-1 };
-int n, m,st,en;
-vector<vector<P>> a,b;
+int gox[4] = { -1,0,1,0 };
+int goy[4] = { 0,1,0,-1 };
+int n, m, st, en;
+int a[501][501];
 int dist[505];
+bool visit[501][501];
 void dijk(int st) {
 	for (int i = 0; i <= n; i++)  dist[i] = 1e9;
 	priority_queue<P, vector<P>, greater<P>> pq;
@@ -36,29 +37,26 @@ void dijk(int st) {
 		int here = pq.top().second;
 		pq.pop();
 		if (cost > dist[here]) continue;
-		for (int i = 0; i < a[here].size(); i++) {
-			int next = a[here][i].first;
-			int nextcost = a[here][i].second;
-			if (nextcost == -1) continue;
-			if (dist[next] > dist[here] + nextcost) {
-				dist[next] = dist[here] + nextcost;
-				pq.push({ dist[next],next });
+		for (int i = 0; i < n; i++) {
+			if (a[here][i] == -1) continue;
+			if (dist[i] > dist[here] + a[here][i]) {
+				dist[i] = dist[here] + a[here][i];
+				pq.push({ dist[i],i });
 			}
 		}
 	}
 
 }
-void dfs(int en) {
-	for (int i = 0; i < b[en].size(); i++) {
-		int back = b[en][i].first;
-		int backcost = b[en][i].second;
-		if (dist[back] + backcost == dist[en]) {
-			for (int j = 0; j < a[back].size(); j++) {
-				int next = a[back][j].first;
-				if (next == en) {
-					a[back][j].second = -1;
-					dfs(back);
-				}
+void bfs(int en,int st,int n) {
+	queue<int> q;
+	q.push(en);
+	while (!q.empty()) {
+		int here = q.front();
+		q.pop();
+		for (int i = 0; i < n; i++) {
+			if (dist[here] == dist[i] + a[i][here] && a[i][here] != -1) {
+				a[i][here] = -1;
+				q.push(i);
 			}
 		}
 	}
@@ -68,19 +66,16 @@ int main(void) {
 		scanf("%d%d", &n, &m);
 		if (n == 0 && m == 0) break;
 		scanf("%d%d", &st, &en);
-		a.clear();
-		b.clear();
-		a.resize(n + 1);
-		b.resize(n + 1);
+		memset(a, -1, sizeof(a));
 		memset(dist, 0, sizeof(dist));
+		memset(visit, false, sizeof(visit));
 		for (int i = 1; i <= m; i++) {
-			int left, right,cost;
-			scanf("%d%d%d", &left, &right,&cost);
-			a[left].push_back({ right,cost });
-			b[right].push_back({ left,cost });
+			int left, right, cost;
+			scanf("%d%d%d", &left, &right, &cost);
+			a[left][right] = cost;
 		}
 		dijk(st);
-		dfs(en);
+		bfs(en,st,n);
 		dijk(st);
 		dist[en] == 1e9 ? printf("-1\n") : printf("%d\n", dist[en]);
 	}
