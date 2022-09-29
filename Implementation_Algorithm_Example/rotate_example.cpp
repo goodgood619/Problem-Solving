@@ -20,6 +20,8 @@ vector<string> splitSpace(string &s) {
 			temp.push_back(s[i]);
 		}
 	}
+	
+	v.push_back(temp); // 맨 마지막 
 	return v;
 }
 vector<vector<int>> rotate_matrix_90_degree(vector<vector<int>>& board) {
